@@ -1,5 +1,9 @@
 # paracas
 
+[![CI](https://github.com/factordynamics/paracas/actions/workflows/ci.yml/badge.svg)](https://github.com/factordynamics/paracas/actions/workflows/ci.yml)
+[![Crates.io](https://img.shields.io/crates/v/paracas.svg)](https://crates.io/crates/paracas)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 High-performance Rust CLI for downloading historical tick data from Dukascopy.
 
 ## Features
