@@ -1,0 +1,39 @@
+[package]
+name = "paracas-format"
+description = "Output formatters for paracas tick data downloader"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+default = ["csv", "json", "parquet"]
+csv = []
+json = []
+parquet = ["dep:arrow", "dep:parquet"]
+
+[dependencies]
+paracas-types = { workspace = true }
+paracas-aggregate = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+arrow = { workspace = true, optional = true }
+parquet = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

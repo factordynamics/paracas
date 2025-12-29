@@ -1,0 +1,33 @@
+[package]
+name = "paracas"
+description = "CLI for downloading Dukascopy tick data"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[[bin]]
+name = "paracas"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[features]
+default = ["parquet"]
+parquet = ["paracas-lib/parquet"]
+
+[dependencies]
+paracas-lib = { workspace = true }
+tokio = { workspace = true }
+futures = { workspace = true }
+clap = { workspace = true }
+indicatif = { workspace = true }
+anyhow = { workspace = true }
+chrono = { workspace = true }

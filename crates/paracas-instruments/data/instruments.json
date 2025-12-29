@@ -1,0 +1,354 @@
+{
+  "eurusd": {
+    "id": "eurusd",
+    "name": "EUR/USD",
+    "description": "Euro vs US Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-05-05T00:00:00Z"
+  },
+  "gbpusd": {
+    "id": "gbpusd",
+    "name": "GBP/USD",
+    "description": "British Pound vs US Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-05-05T00:00:00Z"
+  },
+  "usdjpy": {
+    "id": "usdjpy",
+    "name": "USD/JPY",
+    "description": "US Dollar vs Japanese Yen",
+    "category": "forex",
+    "decimal_factor": 1000,
+    "start_tick_date": "2003-05-05T00:00:00Z"
+  },
+  "usdchf": {
+    "id": "usdchf",
+    "name": "USD/CHF",
+    "description": "US Dollar vs Swiss Franc",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-05-05T00:00:00Z"
+  },
+  "audusd": {
+    "id": "audusd",
+    "name": "AUD/USD",
+    "description": "Australian Dollar vs US Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "usdcad": {
+    "id": "usdcad",
+    "name": "USD/CAD",
+    "description": "US Dollar vs Canadian Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "nzdusd": {
+    "id": "nzdusd",
+    "name": "NZD/USD",
+    "description": "New Zealand Dollar vs US Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "eurgbp": {
+    "id": "eurgbp",
+    "name": "EUR/GBP",
+    "description": "Euro vs British Pound",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "eurjpy": {
+    "id": "eurjpy",
+    "name": "EUR/JPY",
+    "description": "Euro vs Japanese Yen",
+    "category": "forex",
+    "decimal_factor": 1000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "eurchf": {
+    "id": "eurchf",
+    "name": "EUR/CHF",
+    "description": "Euro vs Swiss Franc",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "gbpjpy": {
+    "id": "gbpjpy",
+    "name": "GBP/JPY",
+    "description": "British Pound vs Japanese Yen",
+    "category": "forex",
+    "decimal_factor": 1000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "gbpchf": {
+    "id": "gbpchf",
+    "name": "GBP/CHF",
+    "description": "British Pound vs Swiss Franc",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "chfjpy": {
+    "id": "chfjpy",
+    "name": "CHF/JPY",
+    "description": "Swiss Franc vs Japanese Yen",
+    "category": "forex",
+    "decimal_factor": 1000,
+    "start_tick_date": "2003-08-03T00:00:00Z"
+  },
+  "euraud": {
+    "id": "euraud",
+    "name": "EUR/AUD",
+    "description": "Euro vs Australian Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "eurcad": {
+    "id": "eurcad",
+    "name": "EUR/CAD",
+    "description": "Euro vs Canadian Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "eurnzd": {
+    "id": "eurnzd",
+    "name": "EUR/NZD",
+    "description": "Euro vs New Zealand Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "gbpaud": {
+    "id": "gbpaud",
+    "name": "GBP/AUD",
+    "description": "British Pound vs Australian Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "gbpcad": {
+    "id": "gbpcad",
+    "name": "GBP/CAD",
+    "description": "British Pound vs Canadian Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "gbpnzd": {
+    "id": "gbpnzd",
+    "name": "GBP/NZD",
+    "description": "British Pound vs New Zealand Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "audcad": {
+    "id": "audcad",
+    "name": "AUD/CAD",
+    "description": "Australian Dollar vs Canadian Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "audchf": {
+    "id": "audchf",
+    "name": "AUD/CHF",
+    "description": "Australian Dollar vs Swiss Franc",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "audjpy": {
+    "id": "audjpy",
+    "name": "AUD/JPY",
+    "description": "Australian Dollar vs Japanese Yen",
+    "category": "forex",
+    "decimal_factor": 1000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "audnzd": {
+    "id": "audnzd",
+    "name": "AUD/NZD",
+    "description": "Australian Dollar vs New Zealand Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "cadjpy": {
+    "id": "cadjpy",
+    "name": "CAD/JPY",
+    "description": "Canadian Dollar vs Japanese Yen",
+    "category": "forex",
+    "decimal_factor": 1000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "cadchf": {
+    "id": "cadchf",
+    "name": "CAD/CHF",
+    "description": "Canadian Dollar vs Swiss Franc",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "nzdjpy": {
+    "id": "nzdjpy",
+    "name": "NZD/JPY",
+    "description": "New Zealand Dollar vs Japanese Yen",
+    "category": "forex",
+    "decimal_factor": 1000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "nzdcad": {
+    "id": "nzdcad",
+    "name": "NZD/CAD",
+    "description": "New Zealand Dollar vs Canadian Dollar",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "nzdchf": {
+    "id": "nzdchf",
+    "name": "NZD/CHF",
+    "description": "New Zealand Dollar vs Swiss Franc",
+    "category": "forex",
+    "decimal_factor": 100000,
+    "start_tick_date": "2005-10-30T00:00:00Z"
+  },
+  "xauusd": {
+    "id": "xauusd",
+    "name": "XAU/USD",
+    "description": "Gold vs US Dollar",
+    "category": "commodity",
+    "decimal_factor": 1000,
+    "start_tick_date": "2004-05-05T00:00:00Z"
+  },
+  "xagusd": {
+    "id": "xagusd",
+    "name": "XAG/USD",
+    "description": "Silver vs US Dollar",
+    "category": "commodity",
+    "decimal_factor": 1000,
+    "start_tick_date": "2004-05-05T00:00:00Z"
+  },
+  "btcusd": {
+    "id": "btcusd",
+    "name": "BTC/USD",
+    "description": "Bitcoin vs US Dollar",
+    "category": "crypto",
+    "decimal_factor": 100,
+    "start_tick_date": "2017-01-01T00:00:00Z"
+  },
+  "ethusd": {
+    "id": "ethusd",
+    "name": "ETH/USD",
+    "description": "Ethereum vs US Dollar",
+    "category": "crypto",
+    "decimal_factor": 100,
+    "start_tick_date": "2017-06-01T00:00:00Z"
+  },
+  "ltcusd": {
+    "id": "ltcusd",
+    "name": "LTC/USD",
+    "description": "Litecoin vs US Dollar",
+    "category": "crypto",
+    "decimal_factor": 100,
+    "start_tick_date": "2017-07-01T00:00:00Z"
+  },
+  "xrpusd": {
+    "id": "xrpusd",
+    "name": "XRP/USD",
+    "description": "Ripple vs US Dollar",
+    "category": "crypto",
+    "decimal_factor": 100000,
+    "start_tick_date": "2017-09-01T00:00:00Z"
+  },
+  "usa500idxusd": {
+    "id": "usa500idxusd",
+    "name": "US 500",
+    "description": "S&P 500 Index",
+    "category": "index",
+    "decimal_factor": 10,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "usa30idxusd": {
+    "id": "usa30idxusd",
+    "name": "US 30",
+    "description": "Dow Jones Industrial Average",
+    "category": "index",
+    "decimal_factor": 10,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "usaborrowusd": {
+    "id": "usatechidxusd",
+    "name": "US Tech 100",
+    "description": "NASDAQ 100 Index",
+    "category": "index",
+    "decimal_factor": 10,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "deuidxeur": {
+    "id": "deuidxeur",
+    "name": "Germany 40",
+    "description": "DAX 40 Index",
+    "category": "index",
+    "decimal_factor": 10,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "gbridxgbp": {
+    "id": "gbridxgbp",
+    "name": "UK 100",
+    "description": "FTSE 100 Index",
+    "category": "index",
+    "decimal_factor": 10,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "jpnidxjpy": {
+    "id": "jpnidxjpy",
+    "name": "Japan 225",
+    "description": "Nikkei 225 Index",
+    "category": "index",
+    "decimal_factor": 1,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "uscrude": {
+    "id": "uscrude",
+    "name": "WTI Crude Oil",
+    "description": "West Texas Intermediate Crude Oil",
+    "category": "commodity",
+    "decimal_factor": 1000,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "ukcrude": {
+    "id": "ukcrude",
+    "name": "Brent Crude Oil",
+    "description": "Brent Crude Oil",
+    "category": "commodity",
+    "decimal_factor": 1000,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "natgas": {
+    "id": "natgas",
+    "name": "Natural Gas",
+    "description": "Natural Gas",
+    "category": "commodity",
+    "decimal_factor": 1000,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  },
+  "copper": {
+    "id": "copper",
+    "name": "Copper",
+    "description": "Copper",
+    "category": "commodity",
+    "decimal_factor": 10000,
+    "start_tick_date": "2013-05-05T00:00:00Z"
+  }
+}

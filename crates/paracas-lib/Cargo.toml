@@ -1,0 +1,35 @@
+[package]
+name = "paracas-lib"
+description = "High-performance Rust library for downloading Dukascopy tick data"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+default = ["full"]
+full = ["fetch", "aggregate", "format", "parquet"]
+fetch = ["dep:paracas-fetch"]
+aggregate = ["dep:paracas-aggregate"]
+format = ["dep:paracas-format"]
+parquet = ["format", "paracas-format/parquet"]
+
+[dependencies]
+paracas-types = { workspace = true }
+paracas-instruments = { workspace = true }
+paracas-fetch = { workspace = true, optional = true }
+paracas-aggregate = { workspace = true, optional = true }
+paracas-format = { workspace = true, optional = true }

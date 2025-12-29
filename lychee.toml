@@ -1,0 +1,5 @@
+include = ["README.md", "crates/*/README.md", "bin/README.md"]
+accept = [200, 204, 301, 302, 303, 307, 308]
+timeout = 30
+max_concurrency = 16
+cache = true
