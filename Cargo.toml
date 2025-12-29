@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 rust-version = "1.88"
 license = "MIT"
@@ -45,14 +45,14 @@ codegen-units = 16
 
 [workspace.dependencies]
 # Internal crates
-paracas-lib = { path = "crates/paracas-lib", version = "0.3.0" }
-paracas-types = { path = "crates/paracas-types", version = "0.3.0" }
-paracas-instruments = { path = "crates/paracas-instruments", version = "0.3.0" }
-paracas-fetch = { path = "crates/paracas-fetch", version = "0.3.0" }
-paracas-aggregate = { path = "crates/paracas-aggregate", version = "0.3.0" }
-paracas-format = { path = "crates/paracas-format", version = "0.3.0" }
-paracas-estimate = { path = "crates/paracas-estimate", version = "0.3.0" }
-paracas-daemon = { path = "crates/paracas-daemon", version = "0.3.0" }
+paracas-lib = { path = "crates/paracas-lib", version = "0.3.1" }
+paracas-types = { path = "crates/paracas-types", version = "0.3.1" }
+paracas-instruments = { path = "crates/paracas-instruments", version = "0.3.1" }
+paracas-fetch = { path = "crates/paracas-fetch", version = "0.3.1" }
+paracas-aggregate = { path = "crates/paracas-aggregate", version = "0.3.1" }
+paracas-format = { path = "crates/paracas-format", version = "0.3.1" }
+paracas-estimate = { path = "crates/paracas-estimate", version = "0.3.1" }
+paracas-daemon = { path = "crates/paracas-daemon", version = "0.3.1" }
 
 # Async runtime
 futures = "0.3"
