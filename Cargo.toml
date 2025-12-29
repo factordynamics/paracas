@@ -12,7 +12,7 @@ categories = ["finance", "command-line-utilities", "encoding"]
 
 [workspace]
 resolver = "2"
-members = ["crates/*", "bin"]
+members = ["crates/*", "bin", "benches"]
 default-members = ["bin"]
 
 [workspace.lints.rust]
@@ -92,3 +92,8 @@ derive_more = { version = "1.0", default-features = false, features = ["display"
 
 # Testing
 approx = "0.5"
+
+# Benchmarking
+criterion = { version = "0.5", features = ["async_tokio", "html_reports"] }
+tempfile = "3.14"
+which = "7.0"

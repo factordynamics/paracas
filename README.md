@@ -76,6 +76,33 @@ paracas info eurusd
 | 4 hours | `-t h4` | 4-hour OHLCV bars |
 | 1 day | `-t d1` | Daily OHLCV bars |
 
+## Performance
+
+Benchmark comparing paracas against [dukascopy-node](https://www.dukascopy-node.app/) for downloading EUR/USD tick data:
+
+| Data Range | paracas | dukascopy-node | Speedup |
+|------------|---------|----------------|---------|
+| 1 day | 5.24s | 8.26s | **1.6x** |
+| 3 days | 18.97s | 24.27s | **1.3x** |
+
+*Benchmarks run on macOS (Apple Silicon). Results may vary based on network conditions.*
+
+### Running Benchmarks
+
+```bash
+# Run benchmark and output markdown table
+just bench-table
+
+# Run criterion benchmarks
+just bench
+```
+
+To compare against dukascopy-node, install it first:
+
+```bash
+npm install -g dukascopy-node
+```
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.

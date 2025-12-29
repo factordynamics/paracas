@@ -84,22 +84,31 @@ pub fn tick_stream<'a>(
         .map(move |hour| {
             let url = tick_url(&instrument_id, hour);
             let client = client.clone();
-            async move { (hour, client.download(&url).await) }
+            async move {
+                let result = client.download(&url).await;
+                // Process immediately after download (decompression is offloaded to spawn_blocking)
+                process_download_result(hour, result, decimal_factor).await
+            }
         })
         .buffer_unordered(concurrency)
-        .map(move |(hour, result)| process_download_result(hour, result, decimal_factor))
 }
 
 /// Processes a download result into a tick batch.
-fn process_download_result(
+///
+/// Decompression is offloaded to a blocking thread pool to avoid blocking
+/// the async executor.
+async fn process_download_result(
     hour: DateTime<Utc>,
     result: Result<Option<bytes::Bytes>, crate::DownloadError>,
     decimal_factor: f64,
 ) -> Result<TickBatch, ParacasError> {
     match result {
         Ok(Some(compressed)) => {
-            let decompressed =
-                decompress_bi5(&compressed).map_err(|e| ParacasError::Decompress(e.to_string()))?;
+            // Offload CPU-intensive LZMA decompression to blocking thread pool
+            let decompressed = tokio::task::spawn_blocking(move || decompress_bi5(&compressed))
+                .await
+                .map_err(|e| ParacasError::Decompress(format!("spawn_blocking failed: {e}")))?
+                .map_err(|e| ParacasError::Decompress(e.to_string()))?;
 
             let ticks: Vec<Tick> = parse_ticks(&decompressed)
                 .map_err(|e| ParacasError::Parse(e.to_string()))?
@@ -144,36 +153,42 @@ pub fn tick_stream_resilient<'a>(
         .map(move |hour| {
             let url = tick_url(&instrument_id, hour);
             let client = client.clone();
-            async move { (hour, client.download(&url).await) }
+            async move {
+                let result = client.download(&url).await;
+                // Process immediately after download (decompression is offloaded to spawn_blocking)
+                process_download_result_resilient(hour, result, decimal_factor).await
+            }
         })
         .buffer_unordered(concurrency)
-        .map(move |(hour, result)| process_download_result_resilient(hour, result, decimal_factor))
 }
 
 /// Processes a download result into a tick batch, skipping errors.
-#[allow(clippy::option_if_let_else)] // Nested matches are more readable here
-fn process_download_result_resilient(
+///
+/// Decompression is offloaded to a blocking thread pool to avoid blocking
+/// the async executor.
+async fn process_download_result_resilient(
     hour: DateTime<Utc>,
     result: Result<Option<bytes::Bytes>, crate::DownloadError>,
     decimal_factor: f64,
 ) -> TickBatch {
     match result {
         Ok(Some(compressed)) => {
-            match decompress_bi5(&compressed) {
-                Ok(decompressed) => match parse_ticks(&decompressed) {
-                    Ok(raw_ticks) => {
+            // Offload CPU-intensive LZMA decompression to blocking thread pool
+            let decompress_result =
+                tokio::task::spawn_blocking(move || decompress_bi5(&compressed)).await;
+
+            match decompress_result {
+                Ok(Ok(decompressed)) => parse_ticks(&decompressed).map_or_else(
+                    |_| TickBatch::skipped_error(hour),
+                    |raw_ticks| {
                         let ticks: Vec<Tick> = raw_ticks
                             .map(|raw| raw.normalize(hour, decimal_factor))
                             .collect();
                         TickBatch::new(hour, ticks)
-                    }
-                    Err(_) => {
-                        // Parse error - return empty batch with error flag
-                        TickBatch::skipped_error(hour)
-                    }
-                },
-                Err(_) => {
-                    // Decompression error - return empty batch with error flag
+                    },
+                ),
+                _ => {
+                    // Decompression error or spawn_blocking failed - return empty batch with error flag
                     TickBatch::skipped_error(hour)
                 }
             }

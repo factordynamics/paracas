@@ -138,3 +138,21 @@ info instrument:
 fix:
     cargo +nightly fmt --all
     cargo clippy --workspace --all-targets --fix --allow-dirty --allow-staged
+
+# ============================================================
+# Benchmarks
+# ============================================================
+
+# Run criterion benchmarks
+bench:
+    cargo bench --package paracas-bench
+
+# Run benchmark and output markdown table for README
+bench-table:
+    cargo build --release
+    cargo run --package paracas-bench --bin benchmark_table --release
+
+# Quick benchmark (1-day only, fewer iterations)
+bench-quick:
+    cargo build --release
+    cargo run --package paracas-bench --bin benchmark_table --release -- --quick

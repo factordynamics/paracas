@@ -69,8 +69,18 @@ impl DownloadClient {
     /// Returns an error if the HTTP client cannot be created.
     pub fn new(config: ClientConfig) -> Result<Self, reqwest::Error> {
         let client = Client::builder()
+            // Connection pooling - maintain up to concurrency idle connections per host
             .pool_max_idle_per_host(config.concurrency)
+            // Keep connections alive for reuse (Dukascopy supports persistent connections)
+            .pool_idle_timeout(Duration::from_secs(90))
+            // Disable Nagle's algorithm for lower latency
+            .tcp_nodelay(true)
+            // Keep TCP connections alive
+            .tcp_keepalive(Duration::from_secs(60))
+            // Request timeout
             .timeout(config.timeout)
+            // Connection timeout (separate from request timeout)
+            .connect_timeout(Duration::from_secs(10))
             .user_agent(&config.user_agent)
             .gzip(true)
             .build()?;
