@@ -1,6 +1,7 @@
 //! Background job status command.
 
 use anyhow::{Context, Result};
+use inquire::Select;
 use paracas_daemon::{DownloadJob, JobStatus, StateManager};
 
 /// Execute the status command.
@@ -15,8 +16,11 @@ pub(crate) fn status(
         StateManager::with_default_path().context("Failed to initialize state manager")?;
 
     // Handle cancellation request
+    // cancel_id is Some("") when --cancel is passed without a value
+    // cancel_id is Some(id) when --cancel <id> is passed
     if let Some(id) = cancel_id {
-        return cancel_job(&state_manager, id);
+        let id_opt = if id.is_empty() { None } else { Some(id) };
+        return cancel_job(&state_manager, id_opt);
     }
 
     // Handle follow/watch mode
@@ -133,8 +137,63 @@ fn list_jobs(state: &StateManager, running_only: bool, show_all: bool) -> Result
     Ok(())
 }
 
-fn cancel_job(state: &StateManager, job_id: &str) -> Result<()> {
-    let id = job_id.parse().context("Invalid job ID format")?;
+/// Prompt user to select a job from available cancellable jobs.
+fn prompt_cancel_selection(state: &StateManager) -> Result<String> {
+    let jobs = state.list_jobs()?;
+
+    let filtered: Vec<_> = jobs
+        .into_iter()
+        .filter(|job| matches!(job.status, JobStatus::Running | JobStatus::Pending))
+        .collect();
+
+    if filtered.is_empty() {
+        anyhow::bail!("No running or pending jobs found to cancel.");
+    }
+
+    let options: Vec<String> = filtered
+        .iter()
+        .map(|job| {
+            let instruments: Vec<_> = job.tasks.iter().map(|t| t.instrument_id.as_str()).collect();
+            let instruments_display = if instruments.len() > 3 {
+                format!(
+                    "{}, ... (+{} more)",
+                    instruments[..3].join(", "),
+                    instruments.len() - 3
+                )
+            } else {
+                instruments.join(", ")
+            };
+            format!(
+                "{} | {:?} | {:.1}% | {}",
+                job.id,
+                job.status,
+                job.progress_percent(),
+                instruments_display
+            )
+        })
+        .collect();
+
+    let selection = Select::new("Select a job to cancel:", options)
+        .prompt()
+        .context("Job selection cancelled")?;
+
+    // Extract the job ID from the selection (first part before " | ")
+    let job_id = selection
+        .split(" | ")
+        .next()
+        .context("Failed to parse job selection")?
+        .to_string();
+
+    Ok(job_id)
+}
+
+fn cancel_job(state: &StateManager, job_id: Option<&str>) -> Result<()> {
+    let id_str = match job_id {
+        Some(id) => id.to_string(),
+        None => prompt_cancel_selection(state)?,
+    };
+
+    let id = id_str.parse().context("Invalid job ID format")?;
 
     let mut job: DownloadJob = state.load_job(id).context("Job not found")?;
 

@@ -104,8 +104,8 @@ enum Commands {
         #[arg(short, long)]
         follow: Option<u64>,
 
-        /// Cancel a running job
-        #[arg(long)]
+        /// Cancel a running job (prompts for selection if no job ID provided)
+        #[arg(long, num_args = 0..=1, default_missing_value = "")]
         cancel: Option<String>,
     },
 
@@ -164,20 +164,20 @@ enum Commands {
 enum JobAction {
     /// Pause a running job
     Pause {
-        /// Job ID to pause
-        job_id: String,
+        /// Job ID to pause (if omitted, prompts for selection)
+        job_id: Option<String>,
     },
 
     /// Resume a paused job
     Resume {
-        /// Job ID to resume
-        job_id: String,
+        /// Job ID to resume (if omitted, prompts for selection)
+        job_id: Option<String>,
     },
 
     /// Kill a running or paused job
     Kill {
-        /// Job ID to kill
-        job_id: String,
+        /// Job ID to kill (if omitted, prompts for selection)
+        job_id: Option<String>,
     },
 
     /// Clean up finished jobs from storage
@@ -269,12 +269,14 @@ async fn main() -> Result<()> {
         }
         Commands::Job { action } => match action {
             JobAction::Pause { job_id } => {
-                commands::job::job_command("pause", Some(&job_id), false)
+                commands::job::job_command("pause", job_id.as_deref(), false)
             }
             JobAction::Resume { job_id } => {
-                commands::job::job_command("resume", Some(&job_id), false)
+                commands::job::job_command("resume", job_id.as_deref(), false)
             }
-            JobAction::Kill { job_id } => commands::job::job_command("kill", Some(&job_id), false),
+            JobAction::Kill { job_id } => {
+                commands::job::job_command("kill", job_id.as_deref(), false)
+            }
             JobAction::Clean { all } => commands::job::job_command("clean", None, all),
         },
     }

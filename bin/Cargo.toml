@@ -31,5 +31,6 @@ tokio = { workspace = true }
 futures = { workspace = true }
 clap = { workspace = true }
 indicatif = { workspace = true }
+inquire = { workspace = true }
 anyhow = { workspace = true }
 chrono = { workspace = true }
