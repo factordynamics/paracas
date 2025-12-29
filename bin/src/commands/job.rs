@@ -1,6 +1,7 @@
 //! Job management commands (pause, resume, kill, clean).
 
 use anyhow::{Context, Result};
+use inquire::Select;
 use paracas_daemon::{DaemonSpawner, DownloadJob, JobStatus, StateManager};
 
 /// Pause a running job by sending SIGSTOP to its process.
@@ -166,9 +167,11 @@ pub(crate) fn clean_jobs(state: &StateManager, all: bool) -> Result<()> {
         let should_clean = if all {
             job.is_finished()
         } else {
-            // By default, only clean jobs older than 24 hours that are finished
+            // Cancelled jobs are always cleaned (user explicitly cancelled them)
+            // Completed/Failed jobs are only cleaned if older than 24 hours
+            let is_cancelled = job.status == JobStatus::Cancelled;
             let is_old = job.created_at < chrono::Utc::now() - chrono::Duration::hours(24);
-            is_old && job.is_finished()
+            is_cancelled || (is_old && job.is_finished())
         };
 
         if should_clean {
@@ -186,6 +189,65 @@ pub(crate) fn clean_jobs(state: &StateManager, all: bool) -> Result<()> {
     Ok(())
 }
 
+/// Prompt user to select a job from available jobs filtered by the given statuses.
+fn prompt_job_selection(
+    state: &StateManager,
+    action_name: &str,
+    filter_statuses: &[JobStatus],
+) -> Result<String> {
+    let jobs = state.list_jobs()?;
+
+    let filtered: Vec<_> = jobs
+        .into_iter()
+        .filter(|job| filter_statuses.contains(&job.status))
+        .collect();
+
+    if filtered.is_empty() {
+        let status_names: Vec<_> = filter_statuses.iter().map(|s| format!("{s:?}")).collect();
+        anyhow::bail!(
+            "No jobs with status {} found to {}.",
+            status_names.join(" or "),
+            action_name
+        );
+    }
+
+    let options: Vec<String> = filtered
+        .iter()
+        .map(|job| {
+            let instruments: Vec<_> = job.tasks.iter().map(|t| t.instrument_id.as_str()).collect();
+            let instruments_display = if instruments.len() > 3 {
+                format!(
+                    "{}, ... (+{} more)",
+                    instruments[..3].join(", "),
+                    instruments.len() - 3
+                )
+            } else {
+                instruments.join(", ")
+            };
+            format!(
+                "{} | {:?} | {:.1}% | {}",
+                job.id,
+                job.status,
+                job.progress_percent(),
+                instruments_display
+            )
+        })
+        .collect();
+
+    let selection = Select::new(&format!("Select a job to {action_name}:"), options)
+        .prompt()
+        .context("Job selection cancelled")?;
+
+    // Extract the job ID from the selection (first part before " | ")
+    let job_id = selection
+        .split(" | ")
+        .next()
+        .context("Failed to parse job selection")?
+        .to_string();
+
+    Ok(job_id)
+}
+
 /// Execute the job management command.
 pub(crate) fn job_command(action: &str, job_id: Option<&str>, all: bool) -> Result<()> {
     let state_manager =
@@ -193,16 +255,29 @@ pub(crate) fn job_command(action: &str, job_id: Option<&str>, all: bool) -> Resu
 
     match action {
         "pause" => {
-            let id = job_id.context("Job ID required for pause")?;
-            pause_job(&state_manager, id)
+            let id = match job_id {
+                Some(id) => id.to_string(),
+                None => prompt_job_selection(&state_manager, "pause", &[JobStatus::Running])?,
+            };
+            pause_job(&state_manager, &id)
         }
         "resume" => {
-            let id = job_id.context("Job ID required for resume")?;
-            resume_job(&state_manager, id)
+            let id = match job_id {
+                Some(id) => id.to_string(),
+                None => prompt_job_selection(&state_manager, "resume", &[JobStatus::Paused])?,
+            };
+            resume_job(&state_manager, &id)
         }
         "kill" => {
-            let id = job_id.context("Job ID required for kill")?;
-            kill_job(&state_manager, id)
+            let id = match job_id {
+                Some(id) => id.to_string(),
+                None => prompt_job_selection(
+                    &state_manager,
+                    "kill",
+                    &[JobStatus::Running, JobStatus::Pending, JobStatus::Paused],
+                )?,
+            };
+            kill_job(&state_manager, &id)
         }
         "clean" => clean_jobs(&state_manager, all),
         _ => anyhow::bail!("Unknown action: {}", action),
