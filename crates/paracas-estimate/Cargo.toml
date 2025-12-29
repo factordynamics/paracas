@@ -1,0 +1,18 @@
+[package]
+name = "paracas-estimate"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+description = "Download size and time estimation for paracas tick data downloader"
+
+[lints]
+workspace = true
+
+[dependencies]
+paracas-types = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }

@@ -51,6 +51,8 @@ paracas-instruments = { path = "crates/paracas-instruments", version = "0.1.0" }
 paracas-fetch = { path = "crates/paracas-fetch", version = "0.1.0" }
 paracas-aggregate = { path = "crates/paracas-aggregate", version = "0.1.0" }
 paracas-format = { path = "crates/paracas-format", version = "0.1.0" }
+paracas-estimate = { path = "crates/paracas-estimate", version = "0.1.0" }
+paracas-daemon = { path = "crates/paracas-daemon", version = "0.1.0" }
 
 # Async runtime
 tokio = { version = "1.42", features = ["full"] }
@@ -97,3 +99,9 @@ approx = "0.5"
 criterion = { version = "0.5", features = ["async_tokio", "html_reports"] }
 tempfile = "3.14"
 which = "7.0"
+
+# UUID
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Directories
+directories = "5.0"

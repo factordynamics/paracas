@@ -25,6 +25,8 @@ parquet = ["paracas-lib/parquet"]
 
 [dependencies]
 paracas-lib = { workspace = true }
+paracas-daemon = { workspace = true }
+paracas-estimate = { workspace = true }
 tokio = { workspace = true }
 futures = { workspace = true }
 clap = { workspace = true }

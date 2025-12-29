@@ -1,0 +1,39 @@
+{
+  "categories": {
+    "forex": {
+      "avg_compressed_bytes_per_hour": 75000,
+      "avg_ticks_per_hour": 5000,
+      "peak_multiplier": 2.5
+    },
+    "crypto": {
+      "avg_compressed_bytes_per_hour": 150000,
+      "avg_ticks_per_hour": 10000,
+      "peak_multiplier": 3.0
+    },
+    "index": {
+      "avg_compressed_bytes_per_hour": 50000,
+      "avg_ticks_per_hour": 3000,
+      "peak_multiplier": 2.0
+    },
+    "commodity": {
+      "avg_compressed_bytes_per_hour": 40000,
+      "avg_ticks_per_hour": 2500,
+      "peak_multiplier": 2.0
+    },
+    "stock": {
+      "avg_compressed_bytes_per_hour": 30000,
+      "avg_ticks_per_hour": 2000,
+      "peak_multiplier": 1.5
+    },
+    "etf": {
+      "avg_compressed_bytes_per_hour": 25000,
+      "avg_ticks_per_hour": 1500,
+      "peak_multiplier": 1.5
+    },
+    "bond": {
+      "avg_compressed_bytes_per_hour": 20000,
+      "avg_ticks_per_hour": 1000,
+      "peak_multiplier": 1.5
+    }
+  }
+}

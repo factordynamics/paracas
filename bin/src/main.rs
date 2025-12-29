@@ -1,14 +1,13 @@
 //! paracas CLI - High-performance Dukascopy tick data downloader.
 
-use anyhow::{Context, Result, bail};
-use chrono::NaiveDate;
-use clap::{Parser, Subcommand, ValueEnum};
-use futures::StreamExt;
-use indicatif::{ProgressBar, ProgressStyle};
-use paracas_lib::prelude::*;
-use std::fs::File;
-use std::io::BufWriter;
+use anyhow::{Context, Result};
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+
+mod commands;
+mod display;
+
+use display::Format;
 
 #[derive(Parser)]
 #[command(name = "paracas")]
@@ -16,7 +15,7 @@ use std::path::PathBuf;
 #[command(version)]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 
     /// Verbosity level (-v, -vv, -vvv)
     #[arg(short, long, action = clap::ArgAction::Count, global = true)]
@@ -25,6 +24,10 @@ struct Cli {
     /// Quiet mode (suppress progress output)
     #[arg(short, long, global = true)]
     quiet: bool,
+
+    /// Hidden: Run as daemon with job ID (internal use only)
+    #[arg(long, hide = true)]
+    daemon_run: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -57,6 +60,14 @@ enum Commands {
         /// Maximum concurrent downloads
         #[arg(long, default_value = "32")]
         concurrency: usize,
+
+        /// Run in background as daemon
+        #[arg(long)]
+        background: bool,
+
+        /// Skip confirmation prompt (for background mode)
+        #[arg(long)]
+        yes: bool,
     },
 
     /// List available instruments
@@ -75,21 +86,88 @@ enum Commands {
         /// Instrument identifier
         instrument: String,
     },
-}
 
-#[derive(Clone, Copy, ValueEnum)]
-enum Format {
-    Csv,
-    Json,
-    Ndjson,
-    Parquet,
+    /// Check background job status
+    Status {
+        /// Specific job ID to check
+        job_id: Option<String>,
+
+        /// Show only running jobs
+        #[arg(long)]
+        running: bool,
+
+        /// Show all jobs (including completed)
+        #[arg(long)]
+        all: bool,
+
+        /// Follow/watch mode (refresh every N seconds)
+        #[arg(short, long)]
+        follow: Option<u64>,
+
+        /// Cancel a running job
+        #[arg(long)]
+        cancel: Option<String>,
+    },
+
+    /// Download all instruments (or filter by category)
+    DownloadAll {
+        /// Filter by category (forex, crypto, index, commodity)
+        #[arg(short, long)]
+        category: Option<String>,
+
+        /// Start date (YYYY-MM-DD). Defaults to each instrument's earliest data.
+        #[arg(short, long)]
+        start: Option<String>,
+
+        /// End date (YYYY-MM-DD). Defaults to today.
+        #[arg(short, long)]
+        end: Option<String>,
+
+        /// Output directory. Files named <instrument>.<format>
+        #[arg(short, long, default_value = ".")]
+        output_dir: PathBuf,
+
+        /// Output format
+        #[arg(short, long, value_enum, default_value = "csv")]
+        format: Format,
+
+        /// OHLCV aggregation timeframe (omit for raw ticks)
+        #[arg(short, long)]
+        timeframe: Option<String>,
+
+        /// Maximum concurrent instruments to download
+        #[arg(long, default_value = "4")]
+        parallel_instruments: usize,
+
+        /// Maximum concurrent HTTP requests per instrument
+        #[arg(long, default_value = "32")]
+        concurrency: usize,
+
+        /// Run in background as daemon
+        #[arg(long)]
+        background: bool,
+
+        /// Skip confirmation prompt
+        #[arg(long)]
+        yes: bool,
+    },
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    match cli.command {
+    // Check for daemon mode first (internal use)
+    if let Some(job_id) = cli.daemon_run {
+        return commands::daemon_run::daemon_run(&job_id).await;
+    }
+
+    // Require a command otherwise
+    let command = cli
+        .command
+        .context("No command provided. Use --help for usage.")?;
+
+    match command {
         Commands::Download {
             instrument,
             start,
@@ -98,8 +176,10 @@ async fn main() -> Result<()> {
             format,
             timeframe,
             concurrency,
+            background,
+            yes,
         } => {
-            download(
+            commands::download::download(
                 &instrument,
                 start.as_deref(),
                 end.as_deref(),
@@ -107,284 +187,49 @@ async fn main() -> Result<()> {
                 format,
                 timeframe.as_deref(),
                 concurrency,
+                background,
+                yes,
                 cli.quiet,
             )
             .await
         }
         Commands::List { category, search } => {
-            list_instruments(category.as_deref(), search.as_deref())
+            commands::list::list_instruments(category.as_deref(), search.as_deref())
         }
-        Commands::Info { instrument } => show_info(&instrument),
-    }
-}
-
-#[allow(clippy::too_many_arguments)]
-async fn download(
-    instrument_id: &str,
-    start_str: Option<&str>,
-    end_str: Option<&str>,
-    output: Option<PathBuf>,
-    format: Format,
-    timeframe_str: Option<&str>,
-    concurrency: usize,
-    quiet: bool,
-) -> Result<()> {
-    // Lookup instrument
-    let registry = InstrumentRegistry::global();
-    let instrument = registry
-        .get(instrument_id)
-        .with_context(|| format!("Unknown instrument: {instrument_id}"))?;
-
-    // Parse start date (default to instrument's earliest available data)
-    let start = match start_str {
-        Some(s) => NaiveDate::parse_from_str(s, "%Y-%m-%d")
-            .with_context(|| format!("Invalid start date: {s}"))?,
-        None => instrument
-            .start_tick_date()
-            .map(|dt| dt.date_naive())
-            .unwrap_or_else(|| NaiveDate::from_ymd_opt(2003, 5, 5).expect("valid date")),
-    };
-
-    // Parse end date (default to today)
-    let end = match end_str {
-        Some(s) => NaiveDate::parse_from_str(s, "%Y-%m-%d")
-            .with_context(|| format!("Invalid end date: {s}"))?,
-        None => chrono::Utc::now().date_naive(),
-    };
-
-    let range = DateRange::new(start, end)?;
-
-    // Determine output path (default to <instrument>.<format>)
-    let output = output.unwrap_or_else(|| {
-        let ext = match format {
-            Format::Csv => "csv",
-            Format::Json => "json",
-            Format::Ndjson => "ndjson",
-            Format::Parquet => "parquet",
-        };
-        PathBuf::from(format!("{}.{}", instrument_id, ext))
-    });
-
-    // Parse timeframe
-    let timeframe = match timeframe_str {
-        Some(tf) => tf
-            .parse::<Timeframe>()
-            .map_err(|e| anyhow::anyhow!("{e}"))?,
-        None => Timeframe::Tick,
-    };
-
-    // Create client
-    let config = ClientConfig {
-        concurrency,
-        ..Default::default()
-    };
-    let client = DownloadClient::new(config)?;
-
-    // Setup progress bar
-    let total_hours = range.total_hours() as u64;
-    let progress = if quiet {
-        ProgressBar::hidden()
-    } else {
-        let pb = ProgressBar::new(total_hours);
-        pb.set_style(
-            ProgressStyle::default_bar()
-                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} hours ({percent}%) {msg}")
-                .expect("Invalid progress template")
-                .progress_chars("=>-"),
-        );
-        pb.set_message(format!("{} {} -> {}", instrument.id(), start, end));
-        pb
-    };
-
-    // Download and collect ticks using the resilient stream
-    // This will retry on transient errors and skip hours that fail after retries
-    let mut all_ticks: Vec<Tick> = Vec::new();
-    let mut skipped_hours = 0u64;
-    let mut stream = paracas_lib::tick_stream_resilient(&client, instrument, range);
-
-    while let Some(batch) = stream.next().await {
-        if batch.had_error() {
-            skipped_hours += 1;
+        Commands::Info { instrument } => commands::info::show_info(&instrument),
+        Commands::Status {
+            job_id,
+            running,
+            all,
+            follow,
+            cancel,
+        } => commands::status::status(job_id.as_deref(), running, all, follow, cancel.as_deref()),
+        Commands::DownloadAll {
+            category,
+            start,
+            end,
+            output_dir,
+            format,
+            timeframe,
+            parallel_instruments,
+            concurrency,
+            background,
+            yes,
+        } => {
+            commands::download_all::download_all(
+                category.as_deref(),
+                start.as_deref(),
+                end.as_deref(),
+                output_dir,
+                format,
+                timeframe.as_deref(),
+                parallel_instruments,
+                concurrency,
+                background,
+                yes,
+                cli.quiet,
+            )
+            .await
         }
-        all_ticks.extend(batch.ticks);
-        progress.inc(1);
-    }
-
-    let finish_msg = if skipped_hours > 0 {
-        format!(
-            "Downloaded {} ticks ({} hours skipped due to errors)",
-            all_ticks.len(),
-            skipped_hours
-        )
-    } else {
-        format!("Downloaded {} ticks", all_ticks.len())
-    };
-    progress.finish_with_message(finish_msg);
-
-    // Aggregate if needed
-    if timeframe.is_tick() {
-        // Write raw ticks
-        write_ticks(&all_ticks, &output, format)?;
-    } else {
-        // Aggregate to OHLCV
-        let bars = aggregate_ticks(&all_ticks, timeframe);
-        write_ohlcv(&bars, &output, format)?;
-    }
-
-    if !quiet {
-        println!("Output written to: {}", output.display());
-    }
-
-    Ok(())
-}
-
-fn aggregate_ticks(ticks: &[Tick], timeframe: Timeframe) -> Vec<Ohlcv> {
-    let mut aggregator = TickAggregator::new(timeframe);
-    let mut bars = Vec::new();
-
-    for tick in ticks {
-        if let Some(bar) = aggregator.process(*tick) {
-            bars.push(bar);
-        }
-    }
-
-    if let Some(bar) = aggregator.finish() {
-        bars.push(bar);
-    }
-
-    bars
-}
-
-fn write_ticks(ticks: &[Tick], output: &PathBuf, format: Format) -> Result<()> {
-    let file = File::create(output)?;
-    let writer = BufWriter::new(file);
-
-    match format {
-        Format::Csv => {
-            let formatter = CsvFormatter::new();
-            formatter.write_ticks(ticks, writer)?;
-        }
-        Format::Json => {
-            let formatter = JsonFormatter::new();
-            formatter.write_ticks(ticks, writer)?;
-        }
-        Format::Ndjson => {
-            let formatter = JsonFormatter::ndjson();
-            formatter.write_ticks(ticks, writer)?;
-        }
-        Format::Parquet => {
-            #[cfg(feature = "parquet")]
-            {
-                let formatter = ParquetFormatter::new();
-                formatter.write_ticks(ticks, writer)?;
-            }
-            #[cfg(not(feature = "parquet"))]
-            {
-                bail!("Parquet support not compiled in");
-            }
-        }
-    }
-
-    Ok(())
-}
-
-fn write_ohlcv(bars: &[Ohlcv], output: &PathBuf, format: Format) -> Result<()> {
-    let file = File::create(output)?;
-    let writer = BufWriter::new(file);
-
-    match format {
-        Format::Csv => {
-            let formatter = CsvFormatter::new();
-            formatter.write_ohlcv(bars, writer)?;
-        }
-        Format::Json => {
-            let formatter = JsonFormatter::new();
-            formatter.write_ohlcv(bars, writer)?;
-        }
-        Format::Ndjson => {
-            let formatter = JsonFormatter::ndjson();
-            formatter.write_ohlcv(bars, writer)?;
-        }
-        Format::Parquet => {
-            #[cfg(feature = "parquet")]
-            {
-                let formatter = ParquetFormatter::new();
-                formatter.write_ohlcv(bars, writer)?;
-            }
-            #[cfg(not(feature = "parquet"))]
-            {
-                bail!("Parquet support not compiled in");
-            }
-        }
-    }
-
-    Ok(())
-}
-
-fn list_instruments(category: Option<&str>, search: Option<&str>) -> Result<()> {
-    let registry = InstrumentRegistry::global();
-
-    let instruments: Vec<_> = match (category, search) {
-        (Some(cat), _) => {
-            let category = parse_category(cat)?;
-            registry.by_category(category).collect()
-        }
-        (_, Some(pattern)) => registry.search(pattern),
-        (None, None) => registry.all().collect(),
-    };
-
-    if instruments.is_empty() {
-        println!("No instruments found.");
-        return Ok(());
-    }
-
-    println!("{:<15} {:<20} {:<10}", "ID", "NAME", "CATEGORY");
-    println!("{}", "-".repeat(50));
-
-    for instrument in &instruments {
-        println!(
-            "{:<15} {:<20} {:<10}",
-            instrument.id(),
-            instrument.name(),
-            instrument.category()
-        );
-    }
-
-    println!("\nTotal: {} instruments", instruments.len());
-    Ok(())
-}
-
-fn show_info(instrument_id: &str) -> Result<()> {
-    let registry = InstrumentRegistry::global();
-    let instrument = registry
-        .get(instrument_id)
-        .with_context(|| format!("Unknown instrument: {instrument_id}"))?;
-
-    println!("Instrument: {}", instrument.name());
-    println!("ID:         {}", instrument.id());
-    println!("Category:   {}", instrument.category());
-    println!("Description: {}", instrument.description());
-    println!("Decimal Factor: {}", instrument.decimal_factor());
-
-    if let Some(start) = instrument.start_tick_date() {
-        println!("Data Available From: {}", start.format("%Y-%m-%d"));
-    }
-
-    Ok(())
-}
-
-fn parse_category(s: &str) -> Result<Category> {
-    match s.to_lowercase().as_str() {
-        "forex" => Ok(Category::Forex),
-        "crypto" => Ok(Category::Crypto),
-        "index" => Ok(Category::Index),
-        "stock" => Ok(Category::Stock),
-        "commodity" => Ok(Category::Commodity),
-        "etf" => Ok(Category::Etf),
-        "bond" => Ok(Category::Bond),
-        _ => bail!(
-            "Unknown category: {}. Valid options: forex, crypto, index, stock, commodity, etf, bond",
-            s
-        ),
     }
 }

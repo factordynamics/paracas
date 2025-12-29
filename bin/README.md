@@ -1,11 +1,11 @@
-# paracas-cli
+# paracas
 
 Command-line interface for downloading Dukascopy tick data.
 
 ## Installation
 
 ```bash
-cargo install paracas-cli
+cargo install paracas
 ```
 
 ## Commands
@@ -16,10 +16,10 @@ Download tick data for an instrument:
 
 ```bash
 # Download EUR/USD ticks as CSV
-paracas download -i eurusd -s 2024-01-01 -e 2024-01-31 -o data.csv
+paracas download eurusd -s 2024-01-01 -e 2024-01-31 -o data.csv
 
 # Download as Parquet with 1-hour aggregation
-paracas download -i btcusd -s 2024-01-01 -e 2024-12-31 -o data.parquet -f parquet -t h1
+paracas download btcusd -s 2024-01-01 -e 2024-12-31 -o data.parquet -f parquet -t h1
 ```
 
 ### List
