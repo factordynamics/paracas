@@ -17,6 +17,8 @@ pub enum JobStatus {
     Pending,
     /// Job is currently running.
     Running,
+    /// Job is paused by the user.
+    Paused,
     /// Job completed successfully.
     Completed,
     /// Job failed with an error.
@@ -38,6 +40,7 @@ impl JobStatus {
         match self {
             Self::Pending => "pending",
             Self::Running => "running",
+            Self::Paused => "paused",
             Self::Completed => "completed",
             Self::Failed => "failed",
             Self::Cancelled => "cancelled",
@@ -214,6 +217,31 @@ impl DownloadJob {
         for task in &mut self.tasks {
             if !task.status.is_finished() {
                 task.status = JobStatus::Cancelled;
+            }
+        }
+    }
+
+    /// Marks the job as paused.
+    pub fn mark_paused(&mut self) {
+        self.status = JobStatus::Paused;
+
+        // Pause any running tasks
+        for task in &mut self.tasks {
+            if task.status == JobStatus::Running {
+                task.status = JobStatus::Paused;
+            }
+        }
+    }
+
+    /// Marks the job as resumed (back to running).
+    pub fn mark_resumed(&mut self, pid: u32) {
+        self.status = JobStatus::Running;
+        self.pid = Some(pid);
+
+        // Resume any paused tasks
+        for task in &mut self.tasks {
+            if task.status == JobStatus::Paused {
+                task.status = JobStatus::Running;
             }
         }
     }

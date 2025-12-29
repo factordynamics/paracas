@@ -1,7 +1,7 @@
 //! paracas CLI - High-performance Dukascopy tick data downloader.
 
-use anyhow::{Context, Result};
-use clap::{Parser, Subcommand};
+use anyhow::Result;
+use clap::{CommandFactory, Parser, Subcommand};
 use std::path::PathBuf;
 
 mod commands;
@@ -151,6 +151,41 @@ enum Commands {
         #[arg(long)]
         yes: bool,
     },
+
+    /// Manage background jobs (pause, resume, kill, clean)
+    Job {
+        #[command(subcommand)]
+        action: JobAction,
+    },
+}
+
+/// Actions for managing background jobs.
+#[derive(Subcommand)]
+enum JobAction {
+    /// Pause a running job
+    Pause {
+        /// Job ID to pause
+        job_id: String,
+    },
+
+    /// Resume a paused job
+    Resume {
+        /// Job ID to resume
+        job_id: String,
+    },
+
+    /// Kill a running or paused job
+    Kill {
+        /// Job ID to kill
+        job_id: String,
+    },
+
+    /// Clean up finished jobs from storage
+    Clean {
+        /// Clean all finished jobs (not just old ones)
+        #[arg(long)]
+        all: bool,
+    },
 }
 
 #[tokio::main]
@@ -162,10 +197,11 @@ async fn main() -> Result<()> {
         return commands::daemon_run::daemon_run(&job_id).await;
     }
 
-    // Require a command otherwise
-    let command = cli
-        .command
-        .context("No command provided. Use --help for usage.")?;
+    // Show help if no command provided
+    let Some(command) = cli.command else {
+        Cli::command().print_help()?;
+        return Ok(());
+    };
 
     match command {
         Commands::Download {
@@ -231,5 +267,17 @@ async fn main() -> Result<()> {
             )
             .await
         }
+        Commands::Job { action } => match action {
+            JobAction::Pause { job_id } => {
+                commands::job::job_command("pause", Some(&job_id), false)
+            }
+            JobAction::Resume { job_id } => {
+                commands::job::job_command("resume", Some(&job_id), false)
+            }
+            JobAction::Kill { job_id } => {
+                commands::job::job_command("kill", Some(&job_id), false)
+            }
+            JobAction::Clean { all } => commands::job::job_command("clean", None, all),
+        },
     }
 }
