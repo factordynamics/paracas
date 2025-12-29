@@ -51,6 +51,11 @@ This is a facade crate that re-exports functionality from:
 - `paracas-aggregate` - OHLCV aggregation
 - `paracas-format` - Output formatters
 
+Related workspace crates (not re-exported):
+
+- `paracas-daemon` - Background job management
+- `paracas-estimate` - Download size estimation
+
 ## License
 
 MIT License - see [LICENSE](../../LICENSE) for details.

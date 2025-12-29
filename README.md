@@ -12,6 +12,7 @@ High-performance Rust CLI for downloading historical tick data from Dukascopy.
 - **Flexible**: CSV, JSON, and Parquet output formats
 - **Complete**: All 1000+ Dukascopy instruments supported
 - **Aggregation**: Built-in OHLCV aggregation (1m, 5m, 15m, 30m, 1h, 4h, 1d)
+- **Background Jobs**: Run long downloads as detached daemon processes
 
 ## Installation
 
@@ -38,6 +39,19 @@ paracas download eurusd -s 2024-01-01 -e 2024-01-31 -t h1
 
 # Specify custom output file
 paracas download eurusd -o my_data.csv
+
+# Run download in background
+paracas download eurusd -s 2024-01-01 -e 2024-12-31 --background
+```
+
+### Download All Instruments
+
+```bash
+# Download all forex instruments
+paracas download-all --category forex -o ./data/
+
+# Download all crypto as Parquet in background
+paracas download-all --category crypto -f parquet --background
 ```
 
 ### List Instruments
@@ -57,6 +71,22 @@ paracas list --search btc
 
 ```bash
 paracas info eurusd
+```
+
+### Background Jobs
+
+```bash
+# Check job status
+paracas status --all
+
+# Watch running jobs
+paracas status --follow 5
+
+# Manage jobs
+paracas job pause <job-id>
+paracas job resume <job-id>
+paracas job kill <job-id>
+paracas job clean
 ```
 
 ## Output Formats

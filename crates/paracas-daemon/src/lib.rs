@@ -11,6 +11,7 @@
 //! - [`DaemonSpawner`] - Spawns detached daemon processes for background downloads
 //! - [`DaemonProgress`] - Thread-safe progress tracking for daemon jobs
 
+#![doc = include_str!("../README.md")]
 #![doc(issue_tracker_base_url = "https://github.com/factordynamics/paracas/issues/")]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![warn(missing_docs)]
