@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.88"
 license = "MIT"
@@ -45,14 +45,14 @@ codegen-units = 16
 
 [workspace.dependencies]
 # Internal crates
-paracas-lib = { path = "crates/paracas-lib", version = "0.1.0" }
-paracas-types = { path = "crates/paracas-types", version = "0.1.0" }
-paracas-instruments = { path = "crates/paracas-instruments", version = "0.1.0" }
-paracas-fetch = { path = "crates/paracas-fetch", version = "0.1.0" }
-paracas-aggregate = { path = "crates/paracas-aggregate", version = "0.1.0" }
-paracas-format = { path = "crates/paracas-format", version = "0.1.0" }
-paracas-estimate = { path = "crates/paracas-estimate", version = "0.1.0" }
-paracas-daemon = { path = "crates/paracas-daemon", version = "0.1.0" }
+paracas-lib = { path = "crates/paracas-lib", version = "0.2.0" }
+paracas-types = { path = "crates/paracas-types", version = "0.2.0" }
+paracas-instruments = { path = "crates/paracas-instruments", version = "0.2.0" }
+paracas-fetch = { path = "crates/paracas-fetch", version = "0.2.0" }
+paracas-aggregate = { path = "crates/paracas-aggregate", version = "0.2.0" }
+paracas-format = { path = "crates/paracas-format", version = "0.2.0" }
+paracas-estimate = { path = "crates/paracas-estimate", version = "0.2.0" }
+paracas-daemon = { path = "crates/paracas-daemon", version = "0.2.0" }
 
 # Async runtime
 tokio = { version = "1.42", features = ["full"] }

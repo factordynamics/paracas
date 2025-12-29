@@ -34,7 +34,9 @@ pub(crate) fn pause_job(state: &StateManager, job_id: &str) -> Result<()> {
     #[cfg(windows)]
     {
         // Windows doesn't have SIGSTOP equivalent, we'll just update the state
-        eprintln!("Warning: Pause is not fully supported on Windows. Job state updated but process continues.");
+        eprintln!(
+            "Warning: Pause is not fully supported on Windows. Job state updated but process continues."
+        );
     }
 
     job.mark_paused();
@@ -185,11 +187,7 @@ pub(crate) fn clean_jobs(state: &StateManager, all: bool) -> Result<()> {
 }
 
 /// Execute the job management command.
-pub(crate) fn job_command(
-    action: &str,
-    job_id: Option<&str>,
-    all: bool,
-) -> Result<()> {
+pub(crate) fn job_command(action: &str, job_id: Option<&str>, all: bool) -> Result<()> {
     let state_manager =
         StateManager::with_default_path().context("Failed to initialize state manager")?;
 

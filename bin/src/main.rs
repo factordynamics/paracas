@@ -274,9 +274,7 @@ async fn main() -> Result<()> {
             JobAction::Resume { job_id } => {
                 commands::job::job_command("resume", Some(&job_id), false)
             }
-            JobAction::Kill { job_id } => {
-                commands::job::job_command("kill", Some(&job_id), false)
-            }
+            JobAction::Kill { job_id } => commands::job::job_command("kill", Some(&job_id), false),
             JobAction::Clean { all } => commands::job::job_command("clean", None, all),
         },
     }
